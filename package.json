@@ -1,7 +1,7 @@
 {
   "name": "com.apxfly.unityeventtracker",
   "version": "1.0.0",
-  "displayName": "UnityEvent Tracker",
+  "displayName": "UnityEventTracker",
   "description": "This is a set of tools created to help you track persistent calls defined in serialized UnityEvent's in your project.",
   "documentationUrl": "https://github.com/ApxfIy/UnityEventTracker",
   "changelogUrl": "https://github.com/ApxfIy/UnityEventTracker/releases",
