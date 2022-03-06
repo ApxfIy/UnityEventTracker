@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UnityEventTracker
 {
     [Serializable]
-    public class UnityEventTrackerSettings : ScriptableObject
+    internal class UnityEventTrackerSettings : ScriptableObject
     {
         [Header("Tracking settings")]
         [SerializeField]
