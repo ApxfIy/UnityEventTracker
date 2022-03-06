@@ -15,12 +15,12 @@ namespace UnityEventTracker.Utils
 
             public static implicit operator DateTime(JsonDateTime jdt)
             {
-                return DateTime.FromFileTimeUtc(jdt.Value);
+                return DateTime.FromBinary(jdt.Value);
             }
 
             public static implicit operator JsonDateTime(DateTime dt)
             {
-                var jdt = new JsonDateTime {Value = dt.ToFileTimeUtc()};
+                var jdt = new JsonDateTime {Value = dt.ToBinary()};
                 return jdt;
             }
         }
