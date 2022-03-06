@@ -1,0 +1,16 @@
+{
+    "name": "com.apxfly.unityeventtracker",
+    "version": "0.1",
+    "displayName": "UnityEvent Tracker",
+    "description": "This tool helps you keep track of UnityEvent used in you project.",
+    "documentationUrl": "https://github.com/ApxfIy/UnityEventTracker",
+    "changelogUrl": "https://github.com/ApxfIy/UnityEventTracker/releases",
+    "licensesUrl": "https://example.com/licensing.html",
+   "keywords": [
+      "UnityEvent"
+    ],
+    "author": {
+      "name": "Apxfly",
+      "email": "apxfly1@gmail.com"
+    }
+  }
