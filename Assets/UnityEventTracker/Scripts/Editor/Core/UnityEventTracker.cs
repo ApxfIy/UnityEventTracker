@@ -84,7 +84,7 @@ namespace UnityEventTracker
 
             return !canceled;
         }
-        
+
         static UnityEventTracker()
         {
             Settings = UnityEventTrackerSettings.Instance();
@@ -149,7 +149,7 @@ namespace UnityEventTracker
         {
             var changed = false;
 
-            foreach (var path in paths)
+            foreach (var path in paths.Where(p => p.StartsWith("Assets")))
             {
                 if (!IsControlledAsset(path)) continue;
 
@@ -256,7 +256,7 @@ namespace UnityEventTracker
         }
 
         private static void ValidateAllMethodsInClasses(IEnumerable<ScriptAsset> classes)
-        { 
+        {
             var changed = false;
 
             foreach (var scriptAsset in classes)
@@ -313,9 +313,9 @@ namespace UnityEventTracker
             if (!accepted) return;
 
             var absolutePath = Logger.GetBugReportPaths().First();
-            var offset       = absolutePath.IndexOf("Assets", StringComparison.InvariantCulture);
+            var offset = absolutePath.IndexOf("Assets", StringComparison.InvariantCulture);
             var relativePath = absolutePath.Substring(offset);
-            var file         = AssetDatabase.LoadAssetAtPath<TextAsset>(relativePath);
+            var file = AssetDatabase.LoadAssetAtPath<TextAsset>(relativePath);
 
             Selection.activeObject = file;
             EditorGUIUtility.PingObject(file);
