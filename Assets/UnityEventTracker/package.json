@@ -1,16 +1,16 @@
 {
-    "name": "com.apxfly.unityeventtracker",
-    "version": "0.1",
-    "displayName": "UnityEvent Tracker",
-    "description": "This tool helps you keep track of UnityEvent used in you project.",
-    "documentationUrl": "https://github.com/ApxfIy/UnityEventTracker",
-    "changelogUrl": "https://github.com/ApxfIy/UnityEventTracker/releases",
-    "licensesUrl": "https://example.com/licensing.html",
-   "keywords": [
-      "UnityEvent"
-    ],
-    "author": {
-      "name": "Apxfly",
-      "email": "apxfly1@gmail.com"
-    }
+  "name": "com.apxfly.unityeventtracker",
+  "version": "1.0.0",
+  "displayName": "UnityEvent Tracker",
+  "description": "This is a set of tools created to help you track persistent calls defined in serialized UnityEvent's in your project.",
+  "documentationUrl": "https://github.com/ApxfIy/UnityEventTracker",
+  "changelogUrl": "https://github.com/ApxfIy/UnityEventTracker/releases",
+  "licensesUrl": "https://github.com/ApxfIy/UnityEventTracker/blob/main/LICENSE.md",
+  "keywords": [
+    "UnityEvent"
+  ],
+  "author": {
+    "name": "Apxfly",
+    "email": "apxfly1@gmail.com"
   }
+}
