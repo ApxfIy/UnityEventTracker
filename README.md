@@ -33,7 +33,7 @@ Top toolbar contains 4 tabs:
 4. Invalid Argument
   - Displays a list of assets that contain [Target Object(s)](#target-object) or are themselves [Target Objects](#target-object) that have persistent call(s) accepts argument that extends `UnityEngine.Object` type and this argument is invalid (argument object was deleted or not assigned). Click on the asset button will "open" this asset (load if the asset is a scene/prefab and select if the asset is ScriptableObject). Note that in this case, sometimes the null argument expresses the desired behavior. In this case, just ignore this call. I could add functionality to add such a call to the ignore list in the future
 
-If you think that window is not showing you correct information, for example it displays persistent calls that no longer exist or not displaying some calls (see [Limitations](#limitations)), you can re-scan your project via `Tools => UnityEventTracker => Scan Project`.
+If you think that window is not showing you correct information, for example it displays persistent calls that no longer exist or not displaying some calls (see [Limitations](#limitations)), you can re-scan your project via `Tools => UnityEventTracker => Scan Project`. Please note that scenes not included in the build will be skipped.
 
 ## Event Highlighting
 Highlights [Target Objects](#target-object). If all persistent calls on the [Target Object](#target-object) are valid, the object is highlighted in `green`![Green](https://via.placeholder.com/15/00ff00/000000?text=+). If at least one of persistent calls is invalid, the object is highlighted in `red` ![Red](https://via.placeholder.com/15/ff0000/000000?text=+). 
