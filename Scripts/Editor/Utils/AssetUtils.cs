@@ -318,10 +318,7 @@ namespace UnityEventTracker.Utils
             {
                 var guid = GUIDs[i];
                 var relativeAssetPath = AssetDatabase.GUIDToAssetPath(guid);
-
-                // TODO Extract this to settings so user can add/remove folders
-                if (relativeAssetPath.StartsWith("Assets/Plugins") || relativeAssetPath.StartsWith("Assets/Samples")) continue;
-
+                
                 var pathToProject =
                     Application.dataPath.Substring(0,
                         Application.dataPath.LastIndexOf("Assets", StringComparison.InvariantCulture));
