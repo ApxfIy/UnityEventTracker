@@ -46,8 +46,9 @@ namespace UnityEventTracker
             if (!isSaved)
                 return false;
 
-            var scripts = AssetUtils.GetAllScriptAssets("Assets").Where(s => IsValidType(s.Type));
+            var scripts = AssetUtils.GetAllScriptAssets().Where(s => IsValidType(s.Type));
             var classesWithEvents = AssetUtils.GetAllClassesWithEventsGuid(scripts);
+
             ScriptsWithEvents.SetData(classesWithEvents.Select(c => c.Guid).ToHashSet());
 
             var assets = AssetUtils.GetAllAssetOfTypeInTheProject("t:ScriptableObject t:prefab", "Assets")
