@@ -286,29 +286,7 @@ namespace UnityEventTracker.Utils
 
             return assets;
         }
-
-        internal static IEnumerable<ScriptAsset> GetAllClassesWithEventsGuid(IEnumerable<ScriptAsset> scripts)
-        {
-            foreach (var script in scripts)
-            {
-                var type = script.Script.GetClass();
-                var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-                for (var i = 0; i < fields.Length; i++)
-                {
-                    var fieldInfo = fields[i];
-
-                    if (!TypeUtils.BaseUnityEventType.IsAssignableFrom(fieldInfo.FieldType)) continue;
-
-                    if (!fieldInfo.IsPublic && !Attribute.IsDefined(fieldInfo, TypeUtils.SerializeFieldType)) continue;
-
-                    yield return script;
-
-                    break;
-                }
-            }
-        }
-
+        
         internal static IEnumerable<ScriptAsset> GetAllChangedScripts()
         {
             var GUIDs = AssetDatabase.FindAssets("t:script");
