@@ -46,8 +46,8 @@ namespace UnityEventTracker
             if (!isSaved)
                 return false;
 
-            var scripts = AssetUtils.GetAllScriptAssets().Where(s => IsValidType(s.Type));
-            var classesWithEvents = AssetUtils.GetAllClassesWithEventsGuid(scripts);
+            var classesWithEvents = AssetUtils.GetAllScriptAssets()
+                                              .Where(s => IsValidType(s.Type) && TypeUtils.HasEvents(s));
 
             ScriptsWithEvents.SetData(classesWithEvents.Select(c => c.Guid).ToHashSet());
 
@@ -149,25 +149,39 @@ namespace UnityEventTracker
         private static void AssetPostprocessorEventsOnAssetsImported(string[] paths)
         {
             var changed = false;
+            var newScripts = new List<ScriptAsset>();
 
-            foreach (var path in paths.Where(p => p.StartsWith("Assets")))
+            foreach (var path in paths)
             {
-                if (!IsControlledAsset(path)) continue;
-
-                if (Settings.ShouldSkipFolder(path)) continue;
-
-                var asset = Asset.FromRelativePath(path).GetValueUnsafe();
-
-                CallsContainer.RemoveAllEventDataInAsset(asset.Guid);
-
-                var calls = new EventParser(asset, DoesClassHasEvents).Parse();
-
-                foreach (var persistentCall in calls)
+                if (path.EndsWith(".cs"))
                 {
-                    CallsContainer.Add(persistentCall);
+                    var guid = AssetDatabase.AssetPathToGUID(path);
+                    ScriptAsset.FromGuid(guid).OnSome(s=> newScripts.Add(s));
                 }
+                else
+                {
+                    if (!IsControlledAsset(path)) continue;
 
-                changed = true;
+                    if (Settings.ShouldSkipFolder(path)) continue;
+
+                    var asset = Asset.FromRelativePath(path).GetValueUnsafe();
+
+                    CallsContainer.RemoveAllEventDataInAsset(asset.Guid);
+
+                    var calls = new EventParser(asset, DoesClassHasEvents).Parse();
+
+                    foreach (var persistentCall in calls)
+                    {
+                        CallsContainer.Add(persistentCall);
+                    }
+
+                    changed = true;
+                }
+            }
+
+            foreach (var scriptAsset in newScripts.Where(TypeUtils.HasEvents))
+            {
+                ScriptsWithEvents.Add(scriptAsset.Guid);
             }
 
             if (!changed) return;
@@ -179,22 +193,21 @@ namespace UnityEventTracker
 
         private static void AssetModificationEventsOnBeforeDelete(string relativePath)
         {
-            if (Settings.ShouldSkipFolder(relativePath)) return;
-
-            //It's a script meta file
-            if (relativePath.Contains(".cs"))
+            if (relativePath.EndsWith(".cs"))
             {
-                var scriptRelativePath = relativePath.Substring(0, relativePath.Length - 5);
-                var guid = AssetDatabase.AssetPathToGUID(scriptRelativePath);
+                var guid = AssetDatabase.AssetPathToGUID(relativePath);
 
                 ScriptsWithEvents.Remove(guid);
-
                 CallsContainer.RemoveAllMethodsFrom(guid);
 
                 DataChanged();
             }
-            else if (IsControlledAsset(relativePath))
+            else
             {
+                if (Settings.ShouldSkipFolder(relativePath)) return;
+
+                if (!IsControlledAsset(relativePath)) return;
+
                 var asset = Asset.FromRelativePath(relativePath).GetValueUnsafe();
                 CallsContainer.RemoveAllEventDataInAsset(asset.Guid);
 
@@ -204,10 +217,8 @@ namespace UnityEventTracker
 
         private static void AssetModificationEventsOnBeforeCreate(string relativePath)
         {
-            if (!relativePath.Contains(".cs")) return;
-
-            if (Settings.ShouldSkipFolder(relativePath)) return;
-
+            if (!relativePath.EndsWith(".cs")) return;
+            
             var scriptRelativePath = relativePath.Substring(0, relativePath.Length - 5);
             ScriptsToCheck.Add(scriptRelativePath);
         }
