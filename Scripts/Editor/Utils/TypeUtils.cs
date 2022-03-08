@@ -66,24 +66,31 @@ namespace UnityEventTracker.Utils
         }
 
         /// <summary>
-        /// Search field with specified <paramref name="name"/>. Also checks for <see cref="FormerlySerializedAsAttribute"/>
+        /// Search field with specified <paramref name="fieldPath"/>. Also checks for <see cref="FormerlySerializedAsAttribute"/>
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="name"></param>
+        /// <param name="fieldPath"></param>
         /// <returns></returns>
-        internal static Optional<FieldInfo> GetSerializedField(Type type, string name)
+        public static Optional<FieldInfo> GetSerializedField(Type type, string fieldPath)
         {
-            name = name.Trim(); //TODO
-            var fieldNames = name.Split(":");
+            fieldPath = fieldPath.Trim(); //TODO
+            var fieldNames = fieldPath.Split(":");
+            
+            var parent = type;
+            FieldInfo result = null;
 
             foreach (var fieldName in fieldNames)
             {
-                var fieldInfo = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var fieldInfo = parent.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
                 if (fieldInfo != null && (fieldInfo.IsPublic || fieldInfo.IsDefined(SerializeFieldType)))
-                    return Optional<FieldInfo>.FromSome(fieldInfo);
+                {
+                    parent = fieldInfo.FieldType;
+                    result = fieldInfo;
+                    continue;
+                }
 
-                var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var fields = parent.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
                 foreach (var field in fields)
                 {
@@ -92,12 +99,18 @@ namespace UnityEventTracker.Utils
                     if (attribute == null) continue;
                     if (!attribute.oldName.Equals(fieldName)) continue;
                     if (!field.IsPublic && !field.IsDefined(SerializeFieldType)) continue;
-
-                    return Optional<FieldInfo>.FromSome(field);
+                    
+                    parent = field.FieldType;
+                    result = field;
+                    goto Next;
                 }
+
+                return Optional<FieldInfo>.FromNone();
+
+                Next: ;
             }
 
-            return Optional<FieldInfo>.FromNone();
+            return result == null ? Optional<FieldInfo>.FromNone() : Optional<FieldInfo>.FromSome(result);
         }
 
         internal static bool HasEvents(ScriptAsset scriptAsset)
