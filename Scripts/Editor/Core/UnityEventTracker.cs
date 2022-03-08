@@ -22,10 +22,7 @@ namespace UnityEventTracker
         public static event Action OnDataChanged;
         public const string Name = "UnityEventTracker";
         public static readonly string RootPath = Path.Combine(Application.dataPath, "Plugins/UnityEventTracker");
-
-        private static readonly Type MonoBehaviourType = typeof(MonoBehaviour);
-        private static readonly Type ScriptableObjectType = typeof(ScriptableObject);
-
+        
         internal static readonly PersistentCallsCollection CallsContainer =
             new PersistentCallsCollection("PersistentCalls", RootPath);
 
@@ -46,8 +43,7 @@ namespace UnityEventTracker
             if (!isSaved)
                 return false;
 
-            var classesWithEvents = AssetUtils.GetAllScriptAssets()
-                                              .Where(s => IsValidType(s.Type) && TypeUtils.HasEvents(s));
+            var classesWithEvents = AssetUtils.GetAllScriptAssets().Where(TypeUtils.HasEvents);
 
             ScriptsWithEvents.SetData(classesWithEvents.Select(c => c.Guid).ToHashSet());
 
@@ -107,8 +103,7 @@ namespace UnityEventTracker
         private static void OnRecompile()
         {
             var changedScripts =
-                AssetUtils.GetAllChangedScripts()
-                    .Where(s => IsValidType(s.Type)).ToArray();
+                AssetUtils.GetAllChangedScripts().ToArray();
 
             if (changedScripts.Length == 0) return;
 
@@ -251,9 +246,7 @@ namespace UnityEventTracker
                 var monoScript = AssetDatabase.LoadAssetAtPath<MonoScript>(scriptRelativePath);
 
                 var type = monoScript.GetClass();
-
-                if (!IsValidType(type)) return;
-
+                
                 var hasEvents = TypeUtils.HasEvents(type);
                 var guid = AssetDatabase.AssetPathToGUID(scriptRelativePath);
 
@@ -331,21 +324,6 @@ namespace UnityEventTracker
 
             Selection.activeObject = file;
             EditorGUIUtility.PingObject(file);
-        }
-
-        private static bool IsValidType(Type type)
-        {
-            return IsValidMBType(type) || IsValidSOType(type);
-        }
-
-        private static bool IsValidMBType(Type type)
-        {
-            return type != null && !type.IsAbstract && MonoBehaviourType.IsAssignableFrom(type);
-        }
-
-        private static bool IsValidSOType(Type type)
-        {
-            return type != null && !type.IsAbstract && ScriptableObjectType.IsAssignableFrom(type);
         }
 
         private static void DataChanged()

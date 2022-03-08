@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,8 +9,10 @@ namespace UnityEventTracker.Utils
 {
     public static class TypeUtils
     {
-        internal static readonly Type SerializeFieldType = typeof(SerializeField);
-        internal static readonly Type BaseUnityEventType = typeof(UnityEventBase);
+        private static readonly Type SerializeFieldType = typeof(SerializeField);
+        private static readonly Type BaseUnityEventType = typeof(UnityEventBase);
+        private static readonly Type MonoBehaviourType    = typeof(MonoBehaviour);
+        private static readonly Type ScriptableObjectType = typeof(ScriptableObject);
 
         public static bool CheckTypeMatch(Type type, PersistentListenerMode mode)
         {
@@ -71,22 +74,27 @@ namespace UnityEventTracker.Utils
         internal static Optional<FieldInfo> GetSerializedField(Type type, string name)
         {
             name = name.Trim(); //TODO
-            var fieldInfo = type.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var fieldNames = name.Split(":");
 
-            if (fieldInfo != null && (fieldInfo.IsPublic || fieldInfo.IsDefined(SerializeFieldType)))
-                return Optional<FieldInfo>.FromSome(fieldInfo);
-            
-            var fields = type.GetFields(); 
-            
-            foreach (var field in fields)
+            foreach (var fieldName in fieldNames)
             {
-                var attribute = field.GetCustomAttribute<FormerlySerializedAsAttribute>();
+                var fieldInfo = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-                if (attribute == null) continue;
-                if (!attribute.oldName.Equals(name)) continue;
-                if (!field.IsPublic || !field.IsDefined(SerializeFieldType)) continue;
+                if (fieldInfo != null && (fieldInfo.IsPublic || fieldInfo.IsDefined(SerializeFieldType)))
+                    return Optional<FieldInfo>.FromSome(fieldInfo);
 
-                return Optional<FieldInfo>.FromSome(field);
+                var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                foreach (var field in fields)
+                {
+                    var attribute = field.GetCustomAttribute<FormerlySerializedAsAttribute>();
+
+                    if (attribute == null) continue;
+                    if (!attribute.oldName.Equals(fieldName)) continue;
+                    if (!field.IsPublic && !field.IsDefined(SerializeFieldType)) continue;
+
+                    return Optional<FieldInfo>.FromSome(field);
+                }
             }
 
             return Optional<FieldInfo>.FromNone();
@@ -96,22 +104,48 @@ namespace UnityEventTracker.Utils
         {
             return HasEvents(scriptAsset.Script.GetClass());
         }
+        
+        public static bool HasEvents(Type type)
+        {
+            if (!IsValidMBType(type) && !IsValidSOType(type))
+                return false;
 
-        internal static bool HasEvents(Type type)
+            return HasEventsInternal(type);
+        }
+
+        private static bool HasEventsInternal(Type type)
         {
             var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            // To break recursive dependencies
+            var visited = new HashSet<Type> { type };
 
             for (var i = 0; i < fields.Length; i++)
             {
                 var fieldInfo = fields[i];
-                
-                if (!fieldInfo.IsPublic && !Attribute.IsDefined(fieldInfo, SerializeFieldType)) continue;
+
+                if (visited.Contains(fieldInfo.FieldType)) continue;
+
+                if (!fieldInfo.IsPublic && !Attribute.IsDefined(fieldInfo, typeof(SerializeField))) continue;
 
                 if (BaseUnityEventType.IsAssignableFrom(fieldInfo.FieldType))
                     return true;
+
+                if ((fieldInfo.FieldType.Attributes & TypeAttributes.Serializable) == 0) continue;
+
+                return HasEventsInternal(fieldInfo.FieldType);
             }
 
             return false;
+        }
+
+        private static bool IsValidMBType(Type type)
+        {
+            return type != null && !type.IsAbstract && MonoBehaviourType.IsAssignableFrom(type);
+        }
+
+        private static bool IsValidSOType(Type type)
+        {
+            return type != null && !type.IsAbstract && ScriptableObjectType.IsAssignableFrom(type);
         }
     }
 }

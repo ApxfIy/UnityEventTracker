@@ -75,8 +75,7 @@ namespace UnityEventTracker
             {
                 var line = content[i];
 
-                // Skipping nested events for now
-                if (line.Length < 5 || line[4] == ' ')
+                if (line.Length < 5)
                     continue;
 
                 if (!line.TrimStart(' ').StartsWith(m_PersistentCalls))
@@ -97,18 +96,33 @@ namespace UnityEventTracker
 
                 var eventLine = i - 2;
                 var savedEventName = content[eventLine]
-                    .Substring(0, content[eventLine].Length - 1)
-                    .TrimStart(' ');
+                    .Substring(0, content[eventLine].Length - 1);
+
+                var fullEventName = savedEventName.TrimStart(' ');
+                var indent = savedEventName.Length - fullEventName.Length;
+
+                // It's nested event, need to traverse full path
+                while (indent > 2 && eventLine > 1)
+                {
+                    var pl = content[--eventLine];
+                    var trimmedPl = pl.TrimStart(' ');
+                    var currentIndent = pl.Length - trimmedPl.Length;
+
+                    if (indent - currentIndent == 2)
+                    {
+                        fullEventName = fullEventName.Insert(0, trimmedPl);
+                        indent = currentIndent;
+                    }
+                }
 
                 var eventScriptPath = AssetDatabase.GUIDToAssetPath(scriptGuid);
                 var eventScriptType = AssetDatabase.LoadAssetAtPath<MonoScript>(eventScriptPath).GetClass();
 
                 // Verify that event still exists and it's not a leftover calls
                 // TODO Maybe I need to inform user about this calls anyway?
-                if (!TypeUtils.GetSerializedField(eventScriptType, savedEventName).HasValue(out var eventInfo))
+                if (!TypeUtils.GetSerializedField(eventScriptType, fullEventName).HasValue(out var eventInfo))
                     continue;
 
-                var actualEventName = eventInfo.Name;
                 var eventType = eventInfo.FieldType;
 
                 var address = new Address(_asset.Guid, gameObjectId);
@@ -131,7 +145,7 @@ namespace UnityEventTracker
                     var argType = GetArgumentType(content, ref i);
 
                     var isMethodValid = PersistentCallUtils.ValidateMethodCall(target, methodName, argType,
-                        actualEventName, scriptGuid);
+                        fullEventName, scriptGuid);
 
                     // Method isn't valid
                     if (!isMethodValid)
@@ -174,7 +188,7 @@ namespace UnityEventTracker
                     }
 
                     var persistentCall =
-                        new PersistentCall(address, target, objectArg, methodName, argType, argTypes, actualEventName,
+                        new PersistentCall(address, target, objectArg, methodName, argType, argTypes, fullEventName,
                             scriptGuid, methodLineIndex, callState);
 
                     calls.Add(persistentCall);
