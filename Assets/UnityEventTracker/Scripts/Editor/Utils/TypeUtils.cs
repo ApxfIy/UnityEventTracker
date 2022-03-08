@@ -134,7 +134,7 @@ namespace UnityEventTracker.Utils
 
             foreach (var fieldInfo in fields)
             {
-                if (visited.Add(fieldInfo.FieldType)) continue;
+                if (!visited.Add(fieldInfo.FieldType)) continue;
                 
                 if (!fieldInfo.IsPublic && !Attribute.IsDefined(fieldInfo, typeof(SerializeField))) continue;
 
