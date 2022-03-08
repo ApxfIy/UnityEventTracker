@@ -4,16 +4,10 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
-using UnityEventTracker.Utils;
 
 public class TestClassWithNestedEvent : MonoBehaviour
 {
     [field: SerializeField] public Nested1 Instance { get; set; }
-
-    private void Awake()
-    {
-        Debug.Log(TypeUtils.HasEvents(GetType()));
-    }
 
     [Serializable]
     public class Nested1
