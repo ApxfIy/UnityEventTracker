@@ -132,7 +132,7 @@ namespace UnityEventTracker.Utils
 
                 if ((fieldInfo.FieldType.Attributes & TypeAttributes.Serializable) == 0) continue;
 
-                return HasEventsInternal(fieldInfo.FieldType);
+                return HasEventsInternal(fieldInfo.FieldType, visited);
             }
 
             return false;
