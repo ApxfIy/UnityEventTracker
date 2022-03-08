@@ -105,7 +105,7 @@ namespace UnityEventTracker.Utils
             return HasEvents(scriptAsset.Script.GetClass());
         }
         
-        public static bool HasEvents(Type type)
+        internal static bool HasEvents(Type type)
         {
             if (!IsValidMBType(type) && !IsValidSOType(type))
                 return false;
@@ -113,11 +113,11 @@ namespace UnityEventTracker.Utils
             return HasEventsInternal(type);
         }
 
-        private static bool HasEventsInternal(Type type)
+        private static bool HasEventsInternal(Type type, HashSet<Type> visited = null)
         {
             var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             // To break recursive dependencies
-            var visited = new HashSet<Type> { type };
+            visited ??= new HashSet<Type> { type };
 
             for (var i = 0; i < fields.Length; i++)
             {
