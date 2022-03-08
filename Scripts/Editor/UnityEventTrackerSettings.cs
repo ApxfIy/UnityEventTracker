@@ -12,7 +12,7 @@ namespace UnityEventTracker
         [Header("Tracking settings")]
         [SerializeField]
         [Tooltip("If set to false UnityEventTracker will not be tracking changes in scripts/assets." +
-                 "If any scripts/assets has changed when UnityEventController was disabled you need to " +
+                 "If any scripts/assets has changed when UnityEventTracker was disabled you need to " +
                  "scan whole project via Tools/UnityEventTracker/Scan Project command")]
         private ObservableProperty<bool> _isTrackingEnabled = true;
 
