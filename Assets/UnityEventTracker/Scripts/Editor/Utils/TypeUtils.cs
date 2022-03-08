@@ -99,27 +99,16 @@ namespace UnityEventTracker.Utils
 
         internal static bool HasEvents(Type type)
         {
-            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public);
-            var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             for (var i = 0; i < fields.Length; i++)
             {
                 var fieldInfo = fields[i];
-
-                if (!BaseUnityEventType.IsAssignableFrom(fieldInfo.FieldType)) continue;
-
+                
                 if (!fieldInfo.IsPublic && !Attribute.IsDefined(fieldInfo, SerializeFieldType)) continue;
 
-                return true;
-            }
-
-            for (var i = 0; i < props.Length; i++)
-            {
-                var propertyInfo = props[i];
-
-                if (!Attribute.IsDefined(propertyInfo, SerializeFieldType)) continue;
-
-                return true;
+                if (BaseUnityEventType.IsAssignableFrom(fieldInfo.FieldType))
+                    return true;
             }
 
             return false;
