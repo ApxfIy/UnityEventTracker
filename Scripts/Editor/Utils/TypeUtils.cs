@@ -119,12 +119,10 @@ namespace UnityEventTracker.Utils
             // To break recursive dependencies
             visited ??= new HashSet<Type> { type };
 
-            for (var i = 0; i < fields.Length; i++)
+            foreach (var fieldInfo in fields)
             {
-                var fieldInfo = fields[i];
-
-                if (visited.Contains(fieldInfo.FieldType)) continue;
-
+                if (visited.Add(fieldInfo.FieldType)) continue;
+                
                 if (!fieldInfo.IsPublic && !Attribute.IsDefined(fieldInfo, typeof(SerializeField))) continue;
 
                 if (BaseUnityEventType.IsAssignableFrom(fieldInfo.FieldType))
