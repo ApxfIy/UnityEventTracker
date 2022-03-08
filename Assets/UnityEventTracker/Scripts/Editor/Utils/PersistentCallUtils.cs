@@ -19,7 +19,7 @@ namespace UnityEventTracker.Utils
 
             foreach (var call in calls)
             {
-                var isValid = PersistentCallUtils.ValidateMethodCall(call.TargetInfo, newMethodName, call.ListenerMode,
+                var isValid = ValidateMethodCall(call.TargetInfo, newMethodName, call.ListenerMode,
                     call.EventName, call.EventScriptGuid);
 
                 if (!isValid)
@@ -144,13 +144,13 @@ namespace UnityEventTracker.Utils
                 var eventScriptType = AssetDatabase.LoadAssetAtPath<MonoScript>(eventScriptPath).GetClass();
 
                 Type eventType = null;
-                var currentEventName = eventName;
+                var currentEventPath = eventName;
 
                 TypeUtils.GetSerializedField(eventScriptType, eventName)
                     .OnSome(f =>
                     {
                         eventType = f.FieldType;
-                        currentEventName = f.Name;
+                        currentEventPath = f.Name;
                     });
 
                 if (eventType == null)
@@ -161,11 +161,11 @@ namespace UnityEventTracker.Utils
                     return false;
                 }
 
-                if (eventName != currentEventName)
+                if (!currentEventPath.EndsWith(eventName))
                 {
                     // Event was renamed. All MethodCalls where EventScriptGuid == usedMethod.EventScriptGuid
                     // && EventName == usedMethod.EventName in MethodsUsedInEventsContainer must be updated
-                    Debug.LogWarning($"Event was renamed from {eventName} to {currentEventName} in {eventScriptType}");
+                    Debug.LogWarning($"Event was renamed from {eventName} to {currentEventPath} in {eventScriptType}");
                 }
 
                 foreach (var methodInfo in methods)
